@@ -2505,24 +2505,28 @@ const val = Number(inputValue);
 const val = parseInt(inputValue, 10);
 ```
 
-22.4如果出于某种原因你正在做一些疯狂的事情并且是你的瓶颈并且出于性能原因parseInt需要使用 Bitshift ，请留下评论解释为什么以及你在做什么。
+- 22.4如果出于某种原因你正在做一些疯狂的事情并且是你的瓶颈并且出于性能原因parseInt需要使用 Bitshift ，请留下评论解释为什么以及你在做什么。
 
+```javascript
 // good
 /**
- * parseInt was the reason my code was slow.
- * Bitshifting the String to coerce it to a
- * Number made it a lot faster.
+ * parseInt是我的代码很慢的原因，
+ * 将字符串位移来强制转换为数字使它更快。
  */
 const val = inputValue >> 0;
+```
 
-22.5 注意：使用位移操作时要小心。数字表示为64 位值，但位移操作始终返回 32 位整数（源）。对于大于 32 位的整数值，位移位可能会导致意外行为。讨论。最大有符号 32 位 Int 为 2,147,483,647：
+- 22.5 注意：使用位移操作时要小心。数字表示为64 位值，但位移操作始终返回 32 位整数（源）。对于大于 32 位的整数值，位移位可能会导致意外行为。讨论。最大有符号 32 位 Int 为 2,147,483,647：
 
+```javascript
 2147483647 >> 0; // => 2147483647
 2147483648 >> 0; // => -2147483648
 2147483649 >> 0; // => -2147483647
+```
 
-22.6布尔值：eslint：no-new-wrappers
+- 22.6布尔值：eslint：no-new-wrappers
 
+```javascript
 const age = 0;
 
 // bad
@@ -2533,12 +2537,13 @@ const hasAge = Boolean(age);
 
 // best
 const hasAge = !!age;
-⬆ 回到顶部
+```
 
-命名约定
+## 命名约定
 
-23.1避免使用单字母名称。命名时要具有描述性。埃斯林特：id-length
+- 23.1避免使用单字母名称。命名时要具有描述性。埃斯林特：id-length
 
+```javascript
 // bad
 function q() {
   // ...
@@ -2548,9 +2553,11 @@ function q() {
 function query() {
   // ...
 }
+```
 
-23.2命名对象、函数和实例时使用驼峰命名法。埃斯林特：camelcase
+- 23.2命名对象、函数和实例时使用驼峰命名法。埃斯林特：camelcase
 
+```javascript
 // bad
 const OBJEcttsssss = {};
 const this_is_my_object = {};
@@ -2559,9 +2566,11 @@ function c() {}
 // good
 const thisIsMyObject = {};
 function thisIsMyFunction() {}
+```
 
-23.3仅在命名构造函数或类时才使用 PascalCase。埃斯林特：new-cap
+- 23.3仅在命名构造函数或类时才使用 PascalCase。埃斯林特：new-cap
 
+```javascript
 // bad
 function user(options) {
   this.name = options.name;
@@ -2581,11 +2590,13 @@ class User {
 const good = new User({
   name: 'yup',
 });
+```
 
-23.4不要使用尾随或前导下划线。埃斯林特：no-underscore-dangle
+- 23.4不要使用尾随或前导下划线。埃斯林特：no-underscore-dangle
 
-为什么？JavaScript 在属性或方法方面没有隐私的概念。尽管前导下划线是表示“私有”的常见约定，但事实上，这些属性是完全公开的，因此是公共 API 合约的一部分。这种约定可能会导致开发人员错误地认为更改不会被视为破坏，或者不需要测试。tl;dr：如果你希望某些东西是“私有的”，那么它就不能明显地存在。
+> 为什么？JavaScript 在属性或方法方面没有隐私的概念。尽管前导下划线是表示“私有”的常见约定，但事实上，这些属性是完全公开的，因此是公共 API 合约的一部分。这种约定可能会导致开发人员错误地认为更改不会被视为破坏，或者不需要测试。tl;dr：如果你希望某些东西是“私有的”，那么它就不能明显地存在。
 
+```javascript
 // bad
 this.__firstName__ = 'Panda';
 this.firstName_ = 'Panda';
@@ -2598,9 +2609,11 @@ this.firstName = 'Panda';
 // see https://kangax.github.io/compat-table/es6/#test-WeakMap
 const firstNames = new WeakMap();
 firstNames.set(this, 'Panda');
+```
 
-23.5不要保存对this. 使用箭头函数或Function#bind。
+- 23.5不要保存对this. 使用箭头函数或Function#bind。
 
+```javascript
 // bad
 function foo() {
   const self = this;
@@ -2623,9 +2636,11 @@ function foo() {
     console.log(this);
   };
 }
+```
 
-23.6基本文件名应与其默认导出的名称完全匹配。
+- 23.6基本文件名应与其默认导出的名称完全匹配。
 
+```javascript
 // file 1 contents
 class CheckBox {
   // ...
@@ -2656,28 +2671,34 @@ import CheckBox from './CheckBox'; // PascalCase export/import/filename
 import fortyTwo from './fortyTwo'; // camelCase export/import/filename
 import insideDirectory from './insideDirectory'; // camelCase export/import/directory name/implicit "index"
 // ^ supports both insideDirectory.js and insideDirectory/index.js
+```
 
-23.7导出默认函数时使用驼峰命名法。您的文件名应该与您的函数名称相同。
+- 23.7导出默认函数时使用驼峰命名法。您的文件名应该与您的函数名称相同。
 
+```javascript
 function makeStyleGuide() {
   // ...
 }
 
 export default makeStyleGuide;
+```
 
-23.8导出构造函数/类/单例/函数库/裸对象时使用 PascalCase。
+- 23.8 导出构造函数/类/单例/函数库/基本对象时使用 PascalCase。
 
+```javascript
 const AirbnbStyleGuide = {
   es6: {
   },
 };
 
 export default AirbnbStyleGuide;
+```
 
-23.9首字母缩略词和缩写词应始终全部大写或全部小写。
+- 23.9首字母缩略词和缩写词应始终全部大写或全部小写。
 
-为什么？名称是为了可读性，而不是为了安抚计算机算法。
+  > 为什么？名称是为了可读性，而不是为了安抚计算机算法。
 
+```javascript
 // bad
 import SmsContainer from './containers/SmsContainer';
 
@@ -2706,13 +2727,14 @@ import TextMessageContainer from './containers/TextMessageContainer';
 const requests = [
   // ...
 ];
+```
 
-23.10仅当常量 (1) 被导出、(2) 是 a const（不能重新分配）以及 (3) 程序员可以相信它（及其嵌套属性）永远不会改变时，您才可以选择将常量大写。
+- 23.10 只有当它(1)被导出，(2)是一个' const '(它不能被重新赋值)，以及(3)程序员可以信任它(及其嵌套属性)永远不会改变时，你才可以选择大写常量。
 
-为什么？这是一个附加工具，可以在程序员不确定变量是否会更改的情况下提供帮助。大写变量让程序员知道他们可以相信变量（及其属性）不会改变。
-
-那么所有const变量呢？- 这是不必要的，因此文件中的常量不应使用大写。然而，它应该用于导出常量。
-导出的对象怎么样？- 在导出的顶层大写（例如EXPORTED_OBJECT.key）并保持所有嵌套属性不更改。
+  > 为什么？这是一个额外的工具，用于在程序员不确定变量是否可能更改的情况下提供帮助。大写的变量让程序员知道他们可以信任变量(及其属性)不会改变。
+  那么所有的const变量呢?-这是不必要的，所以不应该对文件中的常量使用大写字母。但是，它应该用于导出的常量。
+  那么导出对象呢?-在导出的顶层使用大写字母(例如:' EXPORTED_OBJECT.key ')，并保持所有嵌套属性不改变。
+```javascript
 // bad
 const PRIVATE_VARIABLE = 'should not be unnecessarily uppercased within a file';
 
@@ -2741,14 +2763,15 @@ export const MAPPING = {
 export const MAPPING = {
   key: 'value',
 };
-⬆ 回到顶部
+```
 
-配件
+## 存取器
 
-24.1不需要属性的访问器函数。
+- 24.1不需要属性的存取器函数。
 
-24.2不要使用 JavaScript getter/setter，因为它们会导致意外的副作用，并且更难以测试、维护和推理。相反，如果您确实创建访问器函数，请使用getVal()和setVal('hello')。
+- 24.2不要使用 JavaScript getter/setter，因为它们会导致意外的副作用，并且更难以测试、维护和推理。相反，如果您确实创建存取器函数，请使用getVal()和setVal('hello')。
 
+```javascript
 // bad
 class Dragon {
   get age() {
@@ -2770,9 +2793,11 @@ class Dragon {
     // ...
   }
 }
+```
 
-24.3如果属性/方法是 a boolean，则使用isVal()或hasVal()。
+- 24.3 如果属性/方法是 a boolean，则使用isVal()或hasVal()。
 
+```javascript
 // bad
 if (!dragon.age()) {
   return false;
@@ -2782,9 +2807,11 @@ if (!dragon.age()) {
 if (!dragon.hasAge()) {
   return false;
 }
+```
 
-24.4创建get()和set()运行是可以的，但要保持一致。
+- 24.4创建get()和set()运行是可以的，但要保持一致。
 
+```javascript
 class Jedi {
   constructor(options = {}) {
     const lightsaber = options.lightsaber || 'blue';
@@ -2799,7 +2826,7 @@ class Jedi {
     return this[key];
   }
 }
-⬆ 回到顶部
+```
 
 活动
 
