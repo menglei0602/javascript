@@ -531,3 +531,5 @@ render() {
   return (<div />);
 }
 ```
+## 组件名、文件名、目录名大小写
+  - 组件名用PascalCase；文件名和目录名用camelCase，
