@@ -1443,3 +1443,1517 @@ if (collection.length > 0) {
   // ...
 }
 ```
+- 15.5使用大括号在包含词法声明的case子句中创建块。埃斯林特：defaultletconstfunctionclassno-case-declarations
+
+  > 为什么？词法声明在整个块中可见switch，但仅在分配时才进行初始化，这仅在case到达其时发生。case当多个子句试图定义同一事物时，这会导致问题。
+```javascript
+// bad
+switch (foo) {
+  case 1:
+    let x = 1;
+    break;
+  case 2:
+    const y = 2;
+    break;
+  case 3:
+    function f() {
+      // ...
+    }
+    break;
+  default:
+    class C {}
+}
+
+// good
+switch (foo) {
+  case 1: {
+    let x = 1;
+    break;
+  }
+  case 2: {
+    const y = 2;
+    break;
+  }
+  case 3: {
+    function f() {
+      // ...
+    }
+    break;
+  }
+  case 4:
+    bar();
+    break;
+  default: {
+    class C {}
+  }
+}
+```
+
+- 15.6三元数不应该嵌套，一般是单行表达式。埃斯林特：no-nested-ternary
+```javascript
+// bad
+const foo = maybe1 > maybe2
+  ? "bar"
+  : value1 > value2 ? "baz" : null;
+
+// split into 2 separated ternary expressions
+const maybeNull = value1 > value2 ? 'baz' : null;
+
+// better
+const foo = maybe1 > maybe2
+  ? 'bar'
+  : maybeNull;
+
+// best
+const foo = maybe1 > maybe2 ? 'bar' : maybeNull;
+```
+
+- 15.7避免不必要的三元语句。埃斯林特：no-unneeded-ternary
+```javascript
+// bad
+const foo = a ? a : b;
+const bar = c ? true : false;
+const baz = c ? false : true;
+const quux = a != null ? a : b;
+
+// good
+const foo = a || b;
+const bar = !!c;
+const baz = !c;
+const quux = a ?? b;
+```
+
+- 15.8混合运算符时，请将它们括在括号内。唯一的例外是标准算术运算符：+、、、-和，**因为它们的优先级已被广泛理解。我们建议将/和括*在括号中，因为混合使用时它们的优先级可能不明确。埃斯林特：no-mixed-operators
+
+  > 为什么？这提高了可读性并阐明了开发人员的意图。
+
+```javascript
+// bad
+const foo = a && b < 0 || c > 0 || d + 1 === 0;
+
+// bad
+const bar = a ** b - 5 % d;
+
+// bad
+// one may be confused into thinking (a || b) && c
+if (a || b && c) {
+  return d;
+}
+
+// bad
+const bar = a + b / c * d;
+
+// good
+const foo = (a && b < 0) || c > 0 || (d + 1 === 0);
+
+// good
+const bar = a ** b - (5 % d);
+
+// good
+if (a || (b && c)) {
+  return d;
+}
+
+// good
+const bar = a + (b / c) * d;
+```
+
+- 15.9空合并运算符 ( ??) 是一个逻辑运算符，当其左侧操作数为nullor时，它返回其右侧操作数undefined。否则，它返回左侧操作数。
+
+  > 为什么？它通过区分 null/undefined 与其他虚假值来提供精度，从而增强代码清晰度和可预测性。
+
+```javascript
+// bad
+const value = 0 ?? 'default';
+// returns 0, not 'default'
+
+// bad
+const value = '' ?? 'default';
+// returns '', not 'default'
+
+// good
+const value = null ?? 'default';
+// returns 'default'
+
+// good
+const user = {
+  name: 'John',
+  age: null
+};
+const age = user.age ?? 18;
+// returns 18
+```
+
+## 块
+
+- 16.1对所有多行块使用大括号。埃斯林特：nonblock-statement-body-position
+
+```javascript
+// bad
+if (test)
+  return false;
+
+// good
+if (test) return false;
+
+// good
+if (test) {
+  return false;
+}
+
+// bad
+function foo() { return false; }
+
+// good
+function bar() {
+  return false;
+}
+```
+
+- 16.2如果您使用带有ifand的多行块else，请将else其与块的右大括号放在同一行if。埃斯林特：brace-style
+
+```javascript
+// bad
+if (test) {
+  thing1();
+  thing2();
+}
+else {
+  thing3();
+}
+
+// good
+if (test) {
+  thing1();
+  thing2();
+} else {
+  thing3();
+}
+```
+## 控制语句
+
+- 17.1如果您的控制语句（if等while）变得太长或超过最大行长度，则可以将每个（分组的）条件放入新行中。逻辑运算符应作为该行的开头。
+
+  > 为什么？在行的开头要求运算符可以使运算符保持对齐，并遵循类似于方法链的模式。这还可以通过更容易地直观地遵循复杂的逻辑来提高可读性。
+
+```javascript
+// bad
+if ((foo === 123 || bar === 'abc') && doesItLookGoodWhenItBecomesThatLong() && isThisReallyHappening()) {
+  thing1();
+}
+
+// bad
+if (foo === 123 &&
+  bar === 'abc') {
+  thing1();
+}
+
+// bad
+if (foo === 123
+  && bar === 'abc') {
+  thing1();
+}
+
+// bad
+if (
+  foo === 123 &&
+  bar === 'abc'
+) {
+  thing1();
+}
+
+// good
+if (
+  foo === 123
+  && bar === 'abc'
+) {
+  thing1();
+}
+
+// good
+if (
+  (foo === 123 || bar === 'abc')
+  && doesItLookGoodWhenItBecomesThatLong()
+  && isThisReallyHappening()
+) {
+  thing1();
+}
+
+// good
+if (foo === 123 && bar === 'abc') {
+  thing1();
+}
+```
+
+- 17.2不要使用选择运算符代替控制语句。
+
+```javascript
+// bad
+!isRunning && startRunning();
+
+// good
+if (!isRunning) {
+  startRunning();
+}
+```
+
+## 评论
+
+- 18.1用于/** ... */多行注释。
+
+```javascript
+// bad
+// make() returns a new element
+// based on the passed in tag name
+//
+// @param {String} tag
+// @return {Element} element
+function make(tag) {
+
+  // ...
+
+  return element;
+}
+
+// good
+/**
+ * make() returns a new element
+ * based on the passed-in tag name
+ */
+function make(tag) {
+
+  // ...
+
+  return element;
+}
+```
+
+- 18.2用于//单行注释。将单行注释放在注释主题上方的换行符上。在注释前放置一个空行，除非它位于块的第一行。
+
+```javascript
+// bad
+const active = true;  // is current tab
+
+// good
+// is current tab
+const active = true;
+
+// bad
+function getType() {
+  console.log('fetching type...');
+  // set the default type to 'no type'
+  const type = this.type || 'no type';
+
+  return type;
+}
+
+// good
+function getType() {
+  console.log('fetching type...');
+
+  // set the default type to 'no type'
+  const type = this.type || 'no type';
+
+  return type;
+}
+
+// also good
+function getType() {
+  // set the default type to 'no type'
+  const type = this.type || 'no type';
+
+  return type;
+}
+```
+
+- 18.3所有注释都以空格开头，以便于阅读。埃斯林特：spaced-comment
+
+```javascript
+// bad
+//is current tab
+const active = true;
+
+// good
+// is current tab
+const active = true;
+
+// bad
+/**
+ *make() returns a new element
+ *based on the passed-in tag name
+ */
+function make(tag) {
+
+  // ...
+
+  return element;
+}
+
+// good
+/**
+ * make() returns a new element
+ * based on the passed-in tag name
+ */
+function make(tag) {
+
+  // ...
+
+  return element;
+}
+```
+
+- 18.4在您的评论中添加前缀FIXME或TODO可以帮助其他开发人员快速理解您是否指出了需要重新审视的问题，或者您是否建议了需要实施的问题的解决方案。这些评论与常规评论不同，因为它们是可行的。动作是FIXME: -- need to figure this out或TODO: -- need to implement。
+
+- 18.5用于// FIXME:注释问题。
+
+```javascript
+class Calculator extends Abacus {
+  constructor() {
+    super();
+
+    // FIXME: shouldn’t use a global here
+    total = 0;
+  }
+}
+```
+
+- 18.6用于// TODO:注释问题的解决方案。
+
+```javascript
+class Calculator extends Abacus {
+  constructor() {
+    super();
+
+    // TODO: total should be configurable by an options param
+    this.total = 0;
+  }
+}
+```
+## 空白
+
+- 19.1使用软制表符（空格字符）设置为 2 个空格。埃斯林特：indent
+
+```javascript
+// bad
+function foo() {
+∙∙∙∙let name;
+}
+
+// bad
+function bar() {
+∙let name;
+}
+
+// good
+function baz() {
+∙∙let name;
+}
+```
+
+- 19.2在前导括号之前放置 1 个空格。埃斯林特：space-before-blocks
+
+```javascript
+// bad
+function test(){
+  console.log('test');
+}
+
+// good
+function test() {
+  console.log('test');
+}
+
+// bad
+dog.set('attr',{
+  age: '1 year',
+  breed: 'Bernese Mountain Dog',
+});
+
+// good
+dog.set('attr', {
+  age: '1 year',
+  breed: 'Bernese Mountain Dog',
+});
+```
+
+- 19.3在控制语句中的左括号前放置 1 个空格（if等while）。在函数调用和声明中，参数列表和函数名称之间不要放置空格。埃斯林特：keyword-spacing
+
+```javascript
+// bad
+if(isJedi) {
+  fight ();
+}
+
+// good
+if (isJedi) {
+  fight();
+}
+
+// bad
+function fight () {
+  console.log ('Swooosh!');
+}
+
+// good
+function fight() {
+  console.log('Swooosh!');
+}
+```
+
+- 19.4用空格分隔运算符。埃斯林特：space-infix-ops
+
+```javascript
+// bad
+const x=y+5;
+
+// good
+const x = y + 5;
+```
+
+- 19.5以单个换行符结束文件。埃斯林特：eol-last
+
+```javascript
+// bad
+import { es6 } from './AirbnbStyleGuide';
+  // ...
+export default es6;
+// bad
+import { es6 } from './AirbnbStyleGuide';
+  // ...
+export default es6;↵
+↵
+// good
+import { es6 } from './AirbnbStyleGuide';
+  // ...
+export default es6;↵
+```
+
+- 19.6制作长方法链（超过 2 个方法链）时使用缩进。使用前导点，强调该行是方法调用，而不是新语句。埃斯林特：newline-per-chained-call no-whitespace-before-property
+
+```javascript
+// bad
+$('#items').find('.selected').highlight().end().find('.open').updateCount();
+
+// bad
+$('#items').
+  find('.selected').
+    highlight().
+    end().
+  find('.open').
+    updateCount();
+
+// good
+$('#items')
+  .find('.selected')
+    .highlight()
+    .end()
+  .find('.open')
+    .updateCount();
+
+// bad
+const leds = stage.selectAll('.led').data(data).enter().append('svg:svg').classed('led', true)
+    .attr('width', (radius + margin) * 2).append('svg:g')
+    .attr('transform', `translate(${radius + margin}, ${radius + margin})`)
+    .call(tron.led);
+
+// good
+const leds = stage.selectAll('.led')
+    .data(data)
+  .enter().append('svg:svg')
+    .classed('led', true)
+    .attr('width', (radius + margin) * 2)
+  .append('svg:g')
+    .attr('transform', `translate(${radius + margin}, ${radius + margin})`)
+    .call(tron.led);
+
+// good
+const leds = stage.selectAll('.led').data(data);
+const svg = leds.enter().append('svg:svg');
+svg.classed('led', true).attr('width', (radius + margin) * 2);
+const g = svg.append('svg:g');
+g.attr('transform', `translate(${radius + margin}, ${radius + margin})`).call(tron.led);
+```
+
+- 19.7在块之后和下一个语句之前留一个空行。
+
+```javascript
+// bad
+if (foo) {
+  return bar;
+}
+return baz;
+
+// good
+if (foo) {
+  return bar;
+}
+
+return baz;
+
+// bad
+const obj = {
+  foo() {
+  },
+  bar() {
+  },
+};
+return obj;
+
+// good
+const obj = {
+  foo() {
+  },
+
+  bar() {
+  },
+};
+
+return obj;
+
+// bad
+const arr = [
+  function foo() {
+  },
+  function bar() {
+  },
+];
+return arr;
+
+// good
+const arr = [
+  function foo() {
+  },
+
+  function bar() {
+  },
+];
+
+return arr;
+```
+
+- 19.8不要用空行填充块。埃斯林特：padded-blocks
+
+```javascript
+// bad
+function bar() {
+
+  console.log(foo);
+
+}
+
+// bad
+if (baz) {
+
+  console.log(quux);
+} else {
+  console.log(foo);
+
+}
+
+// bad
+class Foo {
+
+  constructor(bar) {
+    this.bar = bar;
+  }
+}
+
+// good
+function bar() {
+  console.log(foo);
+}
+
+// good
+if (baz) {
+  console.log(quux);
+} else {
+  console.log(foo);
+}
+```
+
+- 19.9不要使用多个空行来填充代码。埃斯林特：no-multiple-empty-lines
+
+```javascript
+// bad
+class Person {
+  constructor(fullName, email, birthday) {
+    this.fullName = fullName;
+
+
+    this.email = email;
+
+
+    this.setAge(birthday);
+  }
+
+
+  setAge(birthday) {
+    const today = new Date();
+
+
+    const age = this.getAge(today, birthday);
+
+
+    this.age = age;
+  }
+
+
+  getAge(today, birthday) {
+    // ..
+  }
+}
+
+// good
+class Person {
+  constructor(fullName, email, birthday) {
+    this.fullName = fullName;
+    this.email = email;
+    this.setAge(birthday);
+  }
+
+  setAge(birthday) {
+    const today = new Date();
+    const age = getAge(today, birthday);
+    this.age = age;
+  }
+
+  getAge(today, birthday) {
+    // ..
+  }
+}
+```
+
+- 19.10括号内不要添加空格。埃斯林特：space-in-parens
+
+```javascript
+// bad
+function bar( foo ) {
+  return foo;
+}
+
+// good
+function bar(foo) {
+  return foo;
+}
+
+// bad
+if ( foo ) {
+  console.log(foo);
+}
+
+// good
+if (foo) {
+  console.log(foo);
+}
+```
+
+- 19.11括号内不要添加空格。埃斯林特：array-bracket-spacing
+
+```javascript
+// bad
+const foo = [ 1, 2, 3 ];
+console.log(foo[ 0 ]);
+
+// good
+const foo = [1, 2, 3];
+console.log(foo[0]);
+```
+
+- 19.12在花括号内添加空格。埃斯林特：object-curly-spacing
+
+```javascript
+// bad
+const foo = {clark: 'kent'};
+
+// good
+const foo = { clark: 'kent' };
+```
+
+- 19.13避免代码行长度超过 100 个字符（包括空格）。注意：根据上述，长字符串不受此规则的约束，并且不应被分解。埃斯林特：max-len
+
+  > 为什么？这保证了可读性和可维护性。
+
+```javascript
+// bad
+const foo = jsonData && jsonData.foo && jsonData.foo.bar && jsonData.foo.bar.baz && jsonData.foo.bar.baz.quux && jsonData.foo.bar.baz.quux.xyzzy;
+
+// bad
+$.ajax({ method: 'POST', url: 'https://airbnb.com/', data: { name: 'John' } }).done(() => console.log('Congratulations!')).fail(() => console.log('You have failed this city.'));
+
+// good
+const foo = jsonData
+  && jsonData.foo
+  && jsonData.foo.bar
+  && jsonData.foo.bar.baz
+  && jsonData.foo.bar.baz.quux
+  && jsonData.foo.bar.baz.quux.xyzzy;
+
+// better
+const foo = jsonData
+  ?.foo
+  ?.bar
+  ?.baz
+  ?.quux
+  ?.xyzzy;
+
+// good
+$.ajax({
+  method: 'POST',
+  url: 'https://airbnb.com/',
+  data: { name: 'John' },
+})
+  .done(() => console.log('Congratulations!'))
+  .fail(() => console.log('You have failed this city.'));
+```
+
+- 19.15避免逗号前有空格，并要求逗号后有空格。埃斯林特：comma-spacing
+
+```javascript
+// bad
+const foo = 1,bar = 2;
+const arr = [1 , 2];
+
+// good
+const foo = 1, bar = 2;
+const arr = [1, 2];
+```
+
+- 19.16强制计算属性括号内的间距。埃斯林特：computed-property-spacing
+
+```javascript
+// bad
+obj[foo ]
+obj[ 'foo']
+const x = {[ b ]: a}
+obj[foo[ bar ]]
+
+// good
+obj[foo]
+obj['foo']
+const x = { [b]: a }
+obj[foo[bar]]
+```
+
+- 19.17避免函数及其调用之间有空格。埃斯林特：func-call-spacing
+
+```javascript
+// bad
+func ();
+
+func
+();
+
+// good
+func();
+```
+
+- 19.18强制对象文字属性中键和值之间的间距。埃斯林特：key-spacing
+
+```javascript
+// bad
+const obj = { foo : 42 };
+const obj2 = { foo:42 };
+
+// good
+const obj = { foo: 42 };
+```
+
+- 19.19避免在行尾添加空格。埃斯林特：no-trailing-spaces
+
+- 19.20避免多个空行，文件末尾只允许有一个换行符，并避免在文件开头有一个换行符。埃斯林特：no-multiple-empty-lines
+
+```javascript
+// bad - multiple empty lines
+const x = 1;
+
+
+const y = 2;
+
+// bad - 2+ newlines at end of file
+const x = 1;
+const y = 2;
+
+
+// bad - 1+ newline(s) at beginning of file
+
+const x = 1;
+const y = 2;
+
+// good
+const x = 1;
+const y = 2;
+```
+
+## 逗号
+
+- 20.1前导逗号：不。埃斯林特：comma-style
+
+```javascript
+// bad
+const story = [
+    once
+  , upon
+  , aTime
+];
+
+// good
+const story = [
+  once,
+  upon,
+  aTime,
+];
+
+// bad
+const hero = {
+    firstName: 'Ada'
+  , lastName: 'Lovelace'
+  , birthYear: 1815
+  , superPower: 'computers'
+};
+
+// good
+const hero = {
+  firstName: 'Ada',
+  lastName: 'Lovelace',
+  birthYear: 1815,
+  superPower: 'computers',
+};
+```
+
+- 20.2附加尾随逗号：是的。埃斯林特：comma-dangle
+
+  > 为什么？这会导致更清晰的 git diff。此外，像 Babel 这样的转译器会删除转译代码中额外的尾随逗号，这意味着您不必担心旧版浏览器中的尾随逗号问题。
+
+```javascript
+// bad - git diff without trailing comma
+const hero = {
+     firstName: 'Florence',
+-    lastName: 'Nightingale'
++    lastName: 'Nightingale',
++    inventorOf: ['coxcomb chart', 'modern nursing']
+};
+
+// good - git diff with trailing comma
+const hero = {
+     firstName: 'Florence',
+     lastName: 'Nightingale',
++    inventorOf: ['coxcomb chart', 'modern nursing'],
+};
+// bad
+const hero = {
+  firstName: 'Dana',
+  lastName: 'Scully'
+};
+
+const heroes = [
+  'Batman',
+  'Superman'
+];
+
+// good
+const hero = {
+  firstName: 'Dana',
+  lastName: 'Scully',
+};
+
+const heroes = [
+  'Batman',
+  'Superman',
+];
+
+// bad
+function createHero(
+  firstName,
+  lastName,
+  inventorOf
+) {
+  // does nothing
+}
+
+// good
+function createHero(
+  firstName,
+  lastName,
+  inventorOf,
+) {
+  // does nothing
+}
+
+// good (note that a comma must not appear after a "rest" element)
+function createHero(
+  firstName,
+  lastName,
+  inventorOf,
+  ...heroArgs
+) {
+  // does nothing
+}
+
+// bad
+createHero(
+  firstName,
+  lastName,
+  inventorOf
+);
+
+// good
+createHero(
+  firstName,
+  lastName,
+  inventorOf,
+);
+
+// good (note that a comma must not appear after a "rest" element)
+createHero(
+  firstName,
+  lastName,
+  inventorOf,
+  ...heroArgs
+);
+```
+
+## 分号
+
+- 21.1 是的。埃斯林特：semi
+
+  > 为什么？当 JavaScript 遇到没有分号的换行符时，它会使用一组称为“自动分号插入”的规则来确定是否应将该换行符视为语句的结尾，并（顾名思义）在代码之前放置一个分号如果认为如此，则换行。不过，ASI 包含一些奇怪的行为，如果 JavaScript 误解了换行符，您的代码就会中断。随着新功能成为 JavaScript 的一部分，这些规则将变得更加复杂。显式终止语句并配置 linter 以捕获丢失的分号将有助于防止您遇到问题。
+
+```javascript
+// bad - raises exception
+const luke = {}
+const leia = {}
+[luke, leia].forEach((jedi) => jedi.father = 'vader')
+
+// bad - raises exception
+const reaction = "No! That’s impossible!"
+(async function meanwhileOnTheFalcon() {
+  // handle `leia`, `lando`, `chewie`, `r2`, `c3p0`
+  // ...
+}())
+
+// bad - returns `undefined` instead of the value on the next line - always happens when `return` is on a line by itself because of ASI!
+function foo() {
+  return
+    'search your feelings, you know it to be foo'
+}
+
+// good
+const luke = {};
+const leia = {};
+[luke, leia].forEach((jedi) => {
+  jedi.father = 'vader';
+});
+
+// good
+const reaction = 'No! That’s impossible!';
+(async function meanwhileOnTheFalcon() {
+  // handle `leia`, `lando`, `chewie`, `r2`, `c3p0`
+  // ...
+}());
+
+// good
+function foo() {
+  return 'search your feelings, you know it to be foo';
+}
+```
+
+## 类型转换和强制
+
+- 22.1在语句开头执行类型强制。
+
+- 22.2字符串：eslint：no-new-wrappers
+
+```javascript
+// => this.reviewScore = 9;
+
+// bad
+const totalScore = new String(this.reviewScore); // typeof totalScore is "object" not "string"
+
+// bad
+const totalScore = this.reviewScore + ''; // invokes this.reviewScore.valueOf()
+
+// bad
+const totalScore = this.reviewScore.toString(); // isn’t guaranteed to return a string
+
+// good
+const totalScore = String(this.reviewScore);
+```
+
+- 22.3数字：用于Number类型转换，并且parseInt始终带有基数来解析字符串。埃斯林特：radix no-new-wrappers
+
+  > 为什么？该parseInt函数根据指定的基数通过解释字符串参数的内容来生成一个整数值。字符串中的前导空格将被忽略。如果基数为undefined或0，则假定为 ，10但当数字以字符对0x或开头时除外0X，在这种情况下，假定基数为 16。这与 ECMAScript 3 不同，后者只是不鼓励（但允许）八进制解释。截至 2013 年，许多实现尚未采用此行为。并且，由于必须支持较旧的浏览器，因此始终指定基数。
+
+```javascript
+const inputValue = '4';
+
+// bad
+const val = new Number(inputValue);
+
+// bad
+const val = +inputValue;
+
+// bad
+const val = inputValue >> 0;
+
+// bad
+const val = parseInt(inputValue);
+
+// good
+const val = Number(inputValue);
+
+// good
+const val = parseInt(inputValue, 10);
+```
+
+22.4如果出于某种原因你正在做一些疯狂的事情并且是你的瓶颈并且出于性能原因parseInt需要使用 Bitshift ，请留下评论解释为什么以及你在做什么。
+
+// good
+/**
+ * parseInt was the reason my code was slow.
+ * Bitshifting the String to coerce it to a
+ * Number made it a lot faster.
+ */
+const val = inputValue >> 0;
+
+22.5 注意：使用位移操作时要小心。数字表示为64 位值，但位移操作始终返回 32 位整数（源）。对于大于 32 位的整数值，位移位可能会导致意外行为。讨论。最大有符号 32 位 Int 为 2,147,483,647：
+
+2147483647 >> 0; // => 2147483647
+2147483648 >> 0; // => -2147483648
+2147483649 >> 0; // => -2147483647
+
+22.6布尔值：eslint：no-new-wrappers
+
+const age = 0;
+
+// bad
+const hasAge = new Boolean(age);
+
+// good
+const hasAge = Boolean(age);
+
+// best
+const hasAge = !!age;
+⬆ 回到顶部
+
+命名约定
+
+23.1避免使用单字母名称。命名时要具有描述性。埃斯林特：id-length
+
+// bad
+function q() {
+  // ...
+}
+
+// good
+function query() {
+  // ...
+}
+
+23.2命名对象、函数和实例时使用驼峰命名法。埃斯林特：camelcase
+
+// bad
+const OBJEcttsssss = {};
+const this_is_my_object = {};
+function c() {}
+
+// good
+const thisIsMyObject = {};
+function thisIsMyFunction() {}
+
+23.3仅在命名构造函数或类时才使用 PascalCase。埃斯林特：new-cap
+
+// bad
+function user(options) {
+  this.name = options.name;
+}
+
+const bad = new user({
+  name: 'nope',
+});
+
+// good
+class User {
+  constructor(options) {
+    this.name = options.name;
+  }
+}
+
+const good = new User({
+  name: 'yup',
+});
+
+23.4不要使用尾随或前导下划线。埃斯林特：no-underscore-dangle
+
+为什么？JavaScript 在属性或方法方面没有隐私的概念。尽管前导下划线是表示“私有”的常见约定，但事实上，这些属性是完全公开的，因此是公共 API 合约的一部分。这种约定可能会导致开发人员错误地认为更改不会被视为破坏，或者不需要测试。tl;dr：如果你希望某些东西是“私有的”，那么它就不能明显地存在。
+
+// bad
+this.__firstName__ = 'Panda';
+this.firstName_ = 'Panda';
+this._firstName = 'Panda';
+
+// good
+this.firstName = 'Panda';
+
+// good, in environments where WeakMaps are available
+// see https://kangax.github.io/compat-table/es6/#test-WeakMap
+const firstNames = new WeakMap();
+firstNames.set(this, 'Panda');
+
+23.5不要保存对this. 使用箭头函数或Function#bind。
+
+// bad
+function foo() {
+  const self = this;
+  return function () {
+    console.log(self);
+  };
+}
+
+// bad
+function foo() {
+  const that = this;
+  return function () {
+    console.log(that);
+  };
+}
+
+// good
+function foo() {
+  return () => {
+    console.log(this);
+  };
+}
+
+23.6基本文件名应与其默认导出的名称完全匹配。
+
+// file 1 contents
+class CheckBox {
+  // ...
+}
+export default CheckBox;
+
+// file 2 contents
+export default function fortyTwo() { return 42; }
+
+// file 3 contents
+export default function insideDirectory() {}
+
+// in some other file
+// bad
+import CheckBox from './checkBox'; // PascalCase import/export, camelCase filename
+import FortyTwo from './FortyTwo'; // PascalCase import/filename, camelCase export
+import InsideDirectory from './InsideDirectory'; // PascalCase import/filename, camelCase export
+
+// bad
+import CheckBox from './check_box'; // PascalCase import/export, snake_case filename
+import forty_two from './forty_two'; // snake_case import/filename, camelCase export
+import inside_directory from './inside_directory'; // snake_case import, camelCase export
+import index from './inside_directory/index'; // requiring the index file explicitly
+import insideDirectory from './insideDirectory/index'; // requiring the index file explicitly
+
+// good
+import CheckBox from './CheckBox'; // PascalCase export/import/filename
+import fortyTwo from './fortyTwo'; // camelCase export/import/filename
+import insideDirectory from './insideDirectory'; // camelCase export/import/directory name/implicit "index"
+// ^ supports both insideDirectory.js and insideDirectory/index.js
+
+23.7导出默认函数时使用驼峰命名法。您的文件名应该与您的函数名称相同。
+
+function makeStyleGuide() {
+  // ...
+}
+
+export default makeStyleGuide;
+
+23.8导出构造函数/类/单例/函数库/裸对象时使用 PascalCase。
+
+const AirbnbStyleGuide = {
+  es6: {
+  },
+};
+
+export default AirbnbStyleGuide;
+
+23.9首字母缩略词和缩写词应始终全部大写或全部小写。
+
+为什么？名称是为了可读性，而不是为了安抚计算机算法。
+
+// bad
+import SmsContainer from './containers/SmsContainer';
+
+// bad
+const HttpRequests = [
+  // ...
+];
+
+// good
+import SMSContainer from './containers/SMSContainer';
+
+// good
+const HTTPRequests = [
+  // ...
+];
+
+// also good
+const httpRequests = [
+  // ...
+];
+
+// best
+import TextMessageContainer from './containers/TextMessageContainer';
+
+// best
+const requests = [
+  // ...
+];
+
+23.10仅当常量 (1) 被导出、(2) 是 a const（不能重新分配）以及 (3) 程序员可以相信它（及其嵌套属性）永远不会改变时，您才可以选择将常量大写。
+
+为什么？这是一个附加工具，可以在程序员不确定变量是否会更改的情况下提供帮助。大写变量让程序员知道他们可以相信变量（及其属性）不会改变。
+
+那么所有const变量呢？- 这是不必要的，因此文件中的常量不应使用大写。然而，它应该用于导出常量。
+导出的对象怎么样？- 在导出的顶层大写（例如EXPORTED_OBJECT.key）并保持所有嵌套属性不更改。
+// bad
+const PRIVATE_VARIABLE = 'should not be unnecessarily uppercased within a file';
+
+// bad
+export const THING_TO_BE_CHANGED = 'should obviously not be uppercased';
+
+// bad
+export let REASSIGNABLE_VARIABLE = 'do not use let with uppercase variables';
+
+// ---
+
+// allowed but does not supply semantic value
+export const apiKey = 'SOMEKEY';
+
+// better in most cases
+export const API_KEY = 'SOMEKEY';
+
+// ---
+
+// bad - unnecessarily uppercases key while adding no semantic value
+export const MAPPING = {
+  KEY: 'value'
+};
+
+// good
+export const MAPPING = {
+  key: 'value',
+};
+⬆ 回到顶部
+
+配件
+
+24.1不需要属性的访问器函数。
+
+24.2不要使用 JavaScript getter/setter，因为它们会导致意外的副作用，并且更难以测试、维护和推理。相反，如果您确实创建访问器函数，请使用getVal()和setVal('hello')。
+
+// bad
+class Dragon {
+  get age() {
+    // ...
+  }
+
+  set age(value) {
+    // ...
+  }
+}
+
+// good
+class Dragon {
+  getAge() {
+    // ...
+  }
+
+  setAge(value) {
+    // ...
+  }
+}
+
+24.3如果属性/方法是 a boolean，则使用isVal()或hasVal()。
+
+// bad
+if (!dragon.age()) {
+  return false;
+}
+
+// good
+if (!dragon.hasAge()) {
+  return false;
+}
+
+24.4创建get()和set()运行是可以的，但要保持一致。
+
+class Jedi {
+  constructor(options = {}) {
+    const lightsaber = options.lightsaber || 'blue';
+    this.set('lightsaber', lightsaber);
+  }
+
+  set(key, val) {
+    this[key] = val;
+  }
+
+  get(key) {
+    return this[key];
+  }
+}
+⬆ 回到顶部
+
+活动
+
+25.1将数据有效负载附加到事件（无论是 DOM 事件还是 Backbone 事件等更专有的事件）时，传递对象文字（也称为“哈希”）而不是原始值。这允许后续贡献者向事件有效负载添加更多数据，而无需查找和更新事件的每个处理程序。例如，代替：
+
+// bad
+$(this).trigger('listingUpdated', listing.id);
+
+// ...
+
+$(this).on('listingUpdated', (e, listingID) => {
+  // do something with listingID
+});
+更喜欢：
+
+// good
+$(this).trigger('listingUpdated', { listingID: listing.id });
+
+// ...
+
+$(this).on('listingUpdated', (e, data) => {
+  // do something with data.listingID
+});
+⬆ 回到顶部
+
+jQuery
+
+26.1给 jQuery 对象变量加上前缀$.
+
+// bad
+const sidebar = $('.sidebar');
+
+// good
+const $sidebar = $('.sidebar');
+
+// good
+const $sidebarBtn = $('.sidebar-btn');
+
+26.2缓存 jQuery 查找。
+
+// bad
+function setSidebar() {
+  $('.sidebar').hide();
+
+  // ...
+
+  $('.sidebar').css({
+    'background-color': 'pink',
+  });
+}
+
+// good
+function setSidebar() {
+  const $sidebar = $('.sidebar');
+  $sidebar.hide();
+
+  // ...
+
+  $sidebar.css({
+    'background-color': 'pink',
+  });
+}
+
+26.3对于 DOM 查询，请使用级联$('.sidebar ul')或parent > child $('.sidebar > ul')。jsPerf
+
+26.4find与作用域 jQuery 对象查询一起使用。
+
+// bad
+$('ul', '.sidebar').hide();
+
+// bad
+$('.sidebar').find('ul').hide();
+
+// good
+$('.sidebar ul').hide();
+
+// good
+$('.sidebar > ul').hide();
+
+// good
+$sidebar.find('ul').hide();
+⬆ 回到顶部
+
+ECMAScript 5 兼容性
+
+27.1参考Kangax的ES5兼容性表。
+⬆ 回到顶部
+
+
+ECMAScript 6+ (ES 2015+) 样式
+
+28.1这是各种 ES6+ 功能的链接集合。
+箭头功能
+课程
+对象速记
+对象简洁
+对象计算属性
+模板字符串
+解构
+默认参数
+休息
+数组传播
+让和常量
+求幂运算符
+迭代器和生成器
+模块
+
+28.2不要使用未达到第 3 阶段的TC39 提案。
+
+为什么？它们尚未最终确定，可能会发生变化或完全撤销。我们想使用 JavaScript，但提案还不是 JavaScript。
+
+⬆ 回到顶部
+
+标准库
+标准库 包含功能已损坏但由于遗留原因而保留的实用程序。
+
+
+29.1使用Number.isNaN而不是全局isNaN. 埃斯林特：no-restricted-globals
+
+为什么？全局isNaN将非数字强制转换为数字，对于强制转换为 NaN 的任何内容都返回 true。如果需要这种行为，请将其明确化。
+
+// bad
+isNaN('1.2'); // false
+isNaN('1.2.3'); // true
+
+// good
+Number.isNaN('1.2.3'); // false
+Number.isNaN(Number('1.2.3')); // true
+
+29.2使用Number.isFinite而不是全局isFinite. 埃斯林特：no-restricted-globals
+
+为什么？全局isFinite将非数字强制转换为数字，对于强制转换为有限数字的任何内容返回 true。如果需要这种行为，请将其明确化。
+
+// bad
+isFinite('2e3'); // true
+
+// good
+Number.isFinite('2e3'); // false
+Number.isFinite(parseInt('2e3', 10)); // true
+⬆ 回到顶部
+
+测试
+
+30.1 是的。
+
+function foo() {
+  return true;
+}
+
+30.2 不，但认真地说：
+无论您使用哪种测试框架，您都应该编写测试！
+努力编写许多小的纯函数，并尽量减少发生突变的地方。
+对存根和模拟要小心——它们会让你的测试变得更加脆弱。
+我们主要在 Airbnb使用mocha和。偶尔也用于小型、独立的模块。jesttape
+100% 的测试覆盖率是一个值得努力的好目标，即使实现它并不总是可行。
+每当您修复错误时，请编写回归测试。未经回归测试而修复的错误几乎肯定会在将来再次出现问题。
+⬆ 回到顶部
