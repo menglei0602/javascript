@@ -2828,159 +2828,30 @@ class Jedi {
 }
 ```
 
-活动
+## 标准库
+  标准库 包含功能已损坏但由于遗留原因而保留的实用程序。
 
-25.1将数据有效负载附加到事件（无论是 DOM 事件还是 Backbone 事件等更专有的事件）时，传递对象文字（也称为“哈希”）而不是原始值。这允许后续贡献者向事件有效负载添加更多数据，而无需查找和更新事件的每个处理程序。例如，代替：
+  - 29.1使用Number.isNaN而不是全局isNaN. 埃斯林特：no-restricted-globals
 
-// bad
-$(this).trigger('listingUpdated', listing.id);
+  > 为什么？全局isNaN将非数字强制转换为数字，对于强制转换为 NaN 的任何内容都返回 true。如果需要这种行为，请将其明确化。
 
-// ...
+  // bad
+  isNaN('1.2'); // false
+  isNaN('1.2.3'); // true
 
-$(this).on('listingUpdated', (e, listingID) => {
-  // do something with listingID
-});
-更喜欢：
+  // good
+  Number.isNaN('1.2.3'); // false
+  Number.isNaN(Number('1.2.3')); // true
 
-// good
-$(this).trigger('listingUpdated', { listingID: listing.id });
+  - 29.2使用Number.isFinite而不是全局isFinite. 埃斯林特：no-restricted-globals
 
-// ...
+  > 为什么？全局isFinite将非数字强制转换为数字，对于强制转换为有限数字的任何内容返回 true。如果需要这种行为，请将其明确化。
+  它们与传统的全局方法`isFinite()`和`isNaN()`的区别在于，传统方法先调用`Number()`将非数值的值转为数值，再进行判断，而这两个新方法只对数值有效，`Number.isFinite()`对于非数值一律返回`false`, `Number.isNaN()`只有对于`NaN`才返回`true`，非`NaN`一律返回`false`。
 
-$(this).on('listingUpdated', (e, data) => {
-  // do something with data.listingID
-});
-⬆ 回到顶部
+  // bad
+  isFinite('2e3'); // true
 
-jQuery
+  // good
+  Number.isFinite('2e3'); // false
+  Number.isFinite(parseInt('2e3', 10)); // true
 
-26.1给 jQuery 对象变量加上前缀$.
-
-// bad
-const sidebar = $('.sidebar');
-
-// good
-const $sidebar = $('.sidebar');
-
-// good
-const $sidebarBtn = $('.sidebar-btn');
-
-26.2缓存 jQuery 查找。
-
-// bad
-function setSidebar() {
-  $('.sidebar').hide();
-
-  // ...
-
-  $('.sidebar').css({
-    'background-color': 'pink',
-  });
-}
-
-// good
-function setSidebar() {
-  const $sidebar = $('.sidebar');
-  $sidebar.hide();
-
-  // ...
-
-  $sidebar.css({
-    'background-color': 'pink',
-  });
-}
-
-26.3对于 DOM 查询，请使用级联$('.sidebar ul')或parent > child $('.sidebar > ul')。jsPerf
-
-26.4find与作用域 jQuery 对象查询一起使用。
-
-// bad
-$('ul', '.sidebar').hide();
-
-// bad
-$('.sidebar').find('ul').hide();
-
-// good
-$('.sidebar ul').hide();
-
-// good
-$('.sidebar > ul').hide();
-
-// good
-$sidebar.find('ul').hide();
-⬆ 回到顶部
-
-ECMAScript 5 兼容性
-
-27.1参考Kangax的ES5兼容性表。
-⬆ 回到顶部
-
-
-ECMAScript 6+ (ES 2015+) 样式
-
-28.1这是各种 ES6+ 功能的链接集合。
-箭头功能
-课程
-对象速记
-对象简洁
-对象计算属性
-模板字符串
-解构
-默认参数
-休息
-数组传播
-让和常量
-求幂运算符
-迭代器和生成器
-模块
-
-28.2不要使用未达到第 3 阶段的TC39 提案。
-
-为什么？它们尚未最终确定，可能会发生变化或完全撤销。我们想使用 JavaScript，但提案还不是 JavaScript。
-
-⬆ 回到顶部
-
-标准库
-标准库 包含功能已损坏但由于遗留原因而保留的实用程序。
-
-
-29.1使用Number.isNaN而不是全局isNaN. 埃斯林特：no-restricted-globals
-
-为什么？全局isNaN将非数字强制转换为数字，对于强制转换为 NaN 的任何内容都返回 true。如果需要这种行为，请将其明确化。
-
-// bad
-isNaN('1.2'); // false
-isNaN('1.2.3'); // true
-
-// good
-Number.isNaN('1.2.3'); // false
-Number.isNaN(Number('1.2.3')); // true
-
-29.2使用Number.isFinite而不是全局isFinite. 埃斯林特：no-restricted-globals
-
-为什么？全局isFinite将非数字强制转换为数字，对于强制转换为有限数字的任何内容返回 true。如果需要这种行为，请将其明确化。
-
-// bad
-isFinite('2e3'); // true
-
-// good
-Number.isFinite('2e3'); // false
-Number.isFinite(parseInt('2e3', 10)); // true
-⬆ 回到顶部
-
-测试
-
-30.1 是的。
-
-function foo() {
-  return true;
-}
-
-30.2 不，但认真地说：
-无论您使用哪种测试框架，您都应该编写测试！
-努力编写许多小的纯函数，并尽量减少发生突变的地方。
-对存根和模拟要小心——它们会让你的测试变得更加脆弱。
-我们主要在 Airbnb使用mocha和。偶尔也用于小型、独立的模块。jesttape
-100% 的测试覆盖率是一个值得努力的好目标，即使实现它并不总是可行。
-每当您修复错误时，请编写回归测试。未经回归测试而修复的错误几乎肯定会在将来再次出现问题。
-⬆ 回到顶部
